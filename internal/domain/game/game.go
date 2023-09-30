@@ -4,8 +4,11 @@ import (
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/rs/zerolog"
 
+	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/clientshub"
 )
+
+// TODO: add player during game in progress.
 
 const (
 	errGameInProgress      semerr.Error = "the game is in progress"
@@ -26,6 +29,7 @@ type Essentials struct {
 	ClientsHub *clientshub.Hub
 	Logger     zerolog.Logger
 	ChatID     string
+	Config     *config.Config
 }
 
 func New(es Essentials) *Game {

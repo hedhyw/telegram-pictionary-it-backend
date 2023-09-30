@@ -6,6 +6,7 @@ require (
 	github.com/brianvoe/gofakeit v3.18.0+incompatible
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.1
+	github.com/gorilla/schema v1.2.0
 	github.com/gorilla/websocket v1.5.0
 	github.com/hedhyw/semerr v0.6.5
 	github.com/rs/zerolog v1.30.0

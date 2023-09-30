@@ -1,6 +1,10 @@
 package game
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+)
 
 type RequestEventCanvasChanged struct {
 	ImageBase64 string
@@ -19,11 +23,20 @@ func (e *RequestEventGameStarted) IsRequestEvent() {}
 
 type RequestEventPlayerJoined struct {
 	ClientID string
+	Meta     *telegram.InitDataMeta
 }
 
 func (e RequestEventPlayerJoined) String() string { return fmt.Sprintf("%T", e) }
 
 func (e *RequestEventPlayerJoined) IsRequestEvent() {}
+
+type RequestEventPlayerRemoved struct {
+	ClientID string
+}
+
+func (e RequestEventPlayerRemoved) String() string { return fmt.Sprintf("%T", e) }
+
+func (e *RequestEventPlayerRemoved) IsRequestEvent() {}
 
 type RequestEventWordGuessAttempted struct {
 	ClientID string `json:"clientId"`

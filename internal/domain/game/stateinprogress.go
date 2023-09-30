@@ -28,6 +28,8 @@ func (s *stateInProgress) HandleRequestEvent(
 		return s.handleWordGuessAttempted(ctx, event)
 	case *RequestEventCanvasChanged:
 		return s.handleCanvasChanged(ctx, event)
+	case *RequestEventPlayerRemoved:
+		return s.handlePlayerRemoved(ctx, event)
 	default:
 		return entities.NewUnsupportedEventError(event)
 	}
@@ -101,6 +103,31 @@ func (s stateInProgress) handleWordGuessAttempted(
 	}
 
 	return semerr.NewNotFoundError(errPlayerNotFound)
+}
+
+func (s stateInProgress) handlePlayerRemoved(
+	ctx context.Context,
+	event *RequestEventPlayerRemoved,
+) error {
+	logger := s.model.essentials.Logger.With().Str("client", event.ClientID).Logger()
+
+	if s.model.getLeader().ClientID == event.ClientID {
+		logger.Debug().Msg("leader disconnected, finishing game")
+
+		err := s.model.finishGame(ctx)
+		if err != nil {
+			return fmt.Errorf("finishing game: %w", err)
+		}
+	} else if len(s.model.players) == 2 {
+		logger.Debug().Msgf("not enough players (%d), finishing game", len(s.model.players))
+
+		err := s.model.finishGame(ctx)
+		if err != nil {
+			return fmt.Errorf("finishing game: %w", err)
+		}
+	}
+
+	return s.model.removePlayer(ctx, event.ClientID)
 }
 
 func (s stateInProgress) String() string {

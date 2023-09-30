@@ -28,6 +28,8 @@ func (s *stateFinished) HandleRequestEvent(
 		return semerr.NewBadRequestError(errGameIsNotInProgress)
 	case *RequestEventCanvasChanged:
 		return semerr.NewBadRequestError(errGameIsNotInProgress)
+	case *RequestEventPlayerRemoved:
+		return s.model.removePlayer(ctx, event.ClientID)
 	default:
 		return entities.NewUnsupportedEventError(event)
 	}
@@ -37,7 +39,7 @@ func (s stateFinished) handleEventPlayerJoined(
 	ctx context.Context,
 	event *RequestEventPlayerJoined,
 ) error {
-	player := s.model.addPlayer(event.ClientID)
+	player := s.model.addPlayer(event.ClientID, event.Meta)
 
 	return s.model.EmitResponses(ctx, &ResponseEventPlayerHello{
 		Player: player,

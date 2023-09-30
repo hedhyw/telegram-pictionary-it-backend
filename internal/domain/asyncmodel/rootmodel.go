@@ -3,6 +3,7 @@ package asyncmodel
 import (
 	"context"
 	"fmt"
+	"time"
 )
 
 const (
@@ -10,7 +11,8 @@ const (
 )
 
 type Model struct {
-	currentState State
+	currentState   State
+	requestTimeout time.Duration
 
 	handleRequestErrorFunc RequestErrorHandlerFunc
 
@@ -21,9 +23,11 @@ type Model struct {
 func New(
 	initialState State,
 	handleRequestErrorFunc RequestErrorHandlerFunc,
+	requestTimeout time.Duration,
 ) *Model {
 	model := &Model{
-		currentState: initialState,
+		currentState:   initialState,
+		requestTimeout: requestTimeout,
 
 		handleRequestErrorFunc: handleRequestErrorFunc,
 
@@ -31,7 +35,7 @@ func New(
 		responseEventsCh: make(chan ResponseEvent, eventsChannelSize),
 	}
 
-	go model.startEventsProcessing(context.TODO())
+	go model.startEventsProcessing(context.Background())
 
 	return model
 }
@@ -51,9 +55,16 @@ func (m Model) ResponseEvents() <-chan ResponseEvent {
 
 func (m *Model) startEventsProcessing(ctx context.Context) {
 	for event := range m.requestEventsCh {
-		if err := m.currentState.HandleRequestEvent(ctx, event); err != nil {
-			m.handleRequestErrorFunc(fmt.Errorf("%s: %w", m.currentState, err), event)
-		}
+		m.handleEvent(ctx, event)
+	}
+}
+
+func (m *Model) handleEvent(ctx context.Context, event RequestEvent) {
+	ctx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	defer cancel()
+
+	if err := m.currentState.HandleRequestEvent(ctx, event); err != nil {
+		m.handleRequestErrorFunc(fmt.Errorf("%s: %w", m.currentState, err), event)
 	}
 }
 

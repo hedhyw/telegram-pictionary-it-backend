@@ -28,6 +28,8 @@ func (s *stateInitial) HandleRequestEvent(ctx context.Context, event asyncmodel.
 		return s.handleCanvasChanged(ctx, event)
 	case *RequestEventWordGuessAttempted:
 		return s.handleGuessAttempted(ctx, event)
+	case *RequestEventPlayerInitialized:
+		return s.handlePlayerInitialized(ctx, event)
 	default:
 		return entities.NewUnsupportedEventError(event)
 	}
@@ -42,31 +44,19 @@ func (s *stateInitial) handleGameStarted(ctx context.Context, event *RequestEven
 	return game.Start(ctx)
 }
 
-func (s *stateInitial) handleClientConnected(ctx context.Context, event *RequestEventClientConnected) (err error) {
-	logger := s.model.logger
-
+func (s *stateInitial) handleClientConnected(_ context.Context, event *RequestEventClientConnected) (err error) {
 	_, err = uuid.Parse(event.ClientID)
 	if err != nil {
 		return semerr.NewBadRequestError(fmt.Errorf("parsing uuid: %w", err))
 	}
 
-	game := s.createGameIfNotExists(ctx, event.ChatID)
-
-	_, ok := s.model.clientIDToChatID[event.ClientID]
-	if ok {
+	if s.model.clientsHub.HasClient(event.ClientID) {
 		return semerr.NewConflictError(errClientConflict)
 	}
 
-	s.model.clientIDToChatID[event.ClientID] = event.ChatID
+	s.model.clientsHub.AddClient(event.ClientID, event.EventsCh)
 
-	connection := s.model.clientsHub.AddClient(event.ClientID, event.EventsCh)
-
-	logger.Debug().
-		Str("client", event.ClientID).
-		Str("chat", event.ChatID).
-		Msgf("client connected to the chat %s", event.ChatID)
-
-	return game.AddPlayer(ctx, connection.ClientID())
+	return nil
 }
 
 func (s *stateInitial) createGameIfNotExists(
@@ -78,13 +68,14 @@ func (s *stateInitial) createGameIfNotExists(
 		return foundGame
 	}
 
-	s.model.logger.Debug().Str("chat", chatID).Msgf("created a new game in the chat %s", chatID)
+	s.model.essentials.Logger.Debug().Str("chat", chatID).Msgf("created a new game in the chat %s", chatID)
 
 	// nolint: contextcheck // It is a constructor.
 	createdGame := game.New(game.Essentials{
-		Logger:     s.model.logger,
+		Logger:     s.model.essentials.Logger,
 		ChatID:     chatID,
 		ClientsHub: s.model.clientsHub,
+		Config:     s.model.essentials.Config,
 	})
 
 	s.model.chatIDToGame[chatID] = createdGame
@@ -93,10 +84,15 @@ func (s *stateInitial) createGameIfNotExists(
 }
 
 func (s *stateInitial) handleClientDisconnected(
-	_ context.Context,
+	ctx context.Context,
 	event *RequestEventClientDisconnnected,
 ) (err error) {
-	logger := s.model.logger
+	logger := s.model.essentials.Logger
+
+	game, err := s.model.getGameByClient(event.ClientID)
+	if err != nil {
+		return fmt.Errorf("getting game: %w", err)
+	}
 
 	delete(s.model.clientIDToChatID, event.ClientID)
 	s.model.clientsHub.RemoveClient(event.ClientID)
@@ -105,7 +101,7 @@ func (s *stateInitial) handleClientDisconnected(
 		Str("client", event.ClientID).
 		Msgf("client %s disconnected", event.ClientID)
 
-	return nil
+	return game.RemovePlayer(ctx, event.ClientID)
 }
 
 func (s stateInitial) String() string {
@@ -132,4 +128,24 @@ func (s *stateInitial) handleGuessAttempted(ctx context.Context, event *RequestE
 	}
 
 	return game.GuessWord(ctx, event.ClientID, event.Word)
+}
+
+func (s *stateInitial) handlePlayerInitialized(ctx context.Context, event *RequestEventPlayerInitialized) (err error) {
+	logger := s.model.essentials.Logger.With().Str("client", event.ClientID).Logger()
+
+	meta, err := s.model.telegramDecoder.DecodeInitData(event.InitDataRaw)
+	if err != nil {
+		return fmt.Errorf("decoding init data: %w", err)
+	}
+
+	chatID := meta.ChatInstance
+
+	game := s.createGameIfNotExists(ctx, chatID)
+	s.model.clientIDToChatID[event.ClientID] = chatID
+
+	logger.Debug().
+		Str("chat", chatID).
+		Msgf("client connected to the chat %s", chatID)
+
+	return game.AddPlayer(ctx, event.ClientID, meta)
 }

@@ -1,8 +1,9 @@
 package core
 
 import (
-	"github.com/hedhyw/semerr/pkg/v1/semerr"
+	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
 
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/rs/zerolog"
 )
 
@@ -16,8 +17,13 @@ type Core struct {
 	model *Model
 }
 
-func New(logger zerolog.Logger) *Core {
-	model := newModel(logger)
+type Essentials struct {
+	Logger zerolog.Logger
+	Config *config.Config
+}
+
+func New(es Essentials) *Core {
+	model := newModel(es)
 	controller := newController(model)
 
 	return &Core{

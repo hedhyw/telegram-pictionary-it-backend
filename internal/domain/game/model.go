@@ -3,18 +3,20 @@ package game
 import (
 	"context"
 	"math/rand"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/brianvoe/gofakeit"
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
+	"github.com/samber/lo"
 
 	"github.com/hedhyw/telegram-pictionary-backend/internal/assets"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/player"
+	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
 )
-
-// const gameDuration = 2 * time.Minute
-const gameDuration = 10 * time.Second
 
 type Model struct {
 	essentials Essentials
@@ -46,15 +48,21 @@ func newModel(es Essentials) *Model {
 	model.Model = asyncmodel.New(
 		&stateInitial{model: model},
 		asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
+		es.Config.ServerTimeout,
 	)
 
 	return model
 }
 
-func (m *Model) addPlayer(clientID string) *player.Model {
+func (m *Model) addPlayer(clientID string, meta *telegram.InitDataMeta) *player.Model {
 	logger := m.essentials.Logger
 
-	player := player.New(clientID)
+	username := makeUsernameUnique(
+		getUsername(meta),
+		m.players,
+	)
+
+	player := player.New(clientID, username)
 	m.players = append(m.players, player)
 
 	logger.Debug().
@@ -62,6 +70,47 @@ func (m *Model) addPlayer(clientID string) *player.Model {
 		Msgf("the player %s joined the game in the chat %s", player.Username, m.essentials.ChatID)
 
 	return player
+}
+
+func makeUsernameUnique(username string, players []*player.Model) string {
+	const limitCombinations = 1_000
+
+	usernamesSet := lo.SliceToMap(players, func(player *player.Model) (string, struct{}) {
+		return player.Username, struct{}{}
+	})
+
+	_, ok := usernamesSet[username]
+	if !ok {
+		return username
+	}
+
+	for i := 2; i < limitCombinations; i++ {
+		usernameWithNumber := username + " " + strconv.Itoa(i)
+
+		_, ok := usernamesSet[usernameWithNumber]
+		if !ok {
+			return usernameWithNumber
+		}
+	}
+
+	return username
+}
+
+func getUsername(meta *telegram.InitDataMeta) string {
+	user, err := meta.User()
+	if err != nil {
+		return gofakeit.Username()
+	}
+
+	if user.Username != "" {
+		return user.Username
+	}
+
+	if user.FirstName != "" || user.LastName != "" {
+		return strings.TrimSpace(user.FirstName + " " + user.LastName)
+	}
+
+	return gofakeit.Username()
 }
 
 func (m *Model) setRandomWord() {
@@ -119,7 +168,7 @@ func (m *Model) runGameAutoFinisher() {
 	defer finishOnce.Do(func() { close(m.autoFinisherDoneCh) })
 	logger := m.essentials.Logger
 
-	timer := time.NewTimer(gameDuration)
+	timer := time.NewTimer(m.essentials.Config.ServerTimeout)
 	defer timer.Stop()
 
 	select {
@@ -139,6 +188,21 @@ func (m *Model) runGameAutoFinisher() {
 	}
 }
 
+func (m *Model) removePlayer(
+	ctx context.Context,
+	clientID string,
+) error {
+	logger := m.essentials.Logger.With().Str("client", clientID).Logger()
+
+	m.players = lo.Filter(m.players, func(item *player.Model, index int) bool {
+		return item.ClientID != clientID
+	})
+
+	logger.Debug().Msgf("removed player")
+
+	return m.EmitResponses(ctx, m.responseEventGameStateChanged())
+}
+
 func (m *Model) startGame(ctx context.Context) error {
 	if len(m.players) <= 1 {
 		return semerr.NewBadRequestError(errNotEnoughPlayers)
@@ -147,7 +211,9 @@ func (m *Model) startGame(ctx context.Context) error {
 	m.roundDoneCh = make(chan struct{})
 	m.autoFinisherDoneCh = make(chan struct{})
 
-	m.finishAt = time.Now().Add(gameDuration)
+	m.finishAt = time.Now().Add(m.essentials.Config.GameRoundTimeout)
+
+	// nolint: contextcheck // Worker has a different context.
 	go m.runGameAutoFinisher()
 
 	m.round++

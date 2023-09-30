@@ -28,6 +28,7 @@ func newController(model asyncmodel.RequestEventEmitter) *Controller {
 	controller.handlers[RequestEventGameStarted{}.String()] = controller.StartGame
 	controller.handlers[RequestEventCanvasChanged{}.String()] = controller.ChangeCanvas
 	controller.handlers[RequestEventWordGuessAttempted{}.String()] = controller.GuessWord
+	controller.handlers[RequestEventPlayerInitialized{}.String()] = controller.InitializePlayer
 
 	return controller
 }
@@ -35,11 +36,9 @@ func newController(model asyncmodel.RequestEventEmitter) *Controller {
 func (c *Controller) RegisterClient(
 	ctx context.Context,
 	clientID string,
-	chatID string,
 	eventsCh chan<- json.RawMessage,
 ) error {
 	return c.model.EmitRequest(ctx, &RequestEventClientConnected{
-		ChatID:   chatID,
 		ClientID: clientID,
 		EventsCh: eventsCh,
 	})
@@ -107,6 +106,23 @@ func (c *Controller) GuessWord(
 	request entities.SocketRequest,
 ) (err error) {
 	var payload RequestEventWordGuessAttempted
+
+	err = json.Unmarshal(request.Payload, &payload)
+	if err != nil {
+		return semerr.NewBadRequestError(fmt.Errorf("decoding payload: %w", err))
+	}
+
+	payload.ClientID = clientID
+
+	return c.model.EmitRequest(ctx, &payload)
+}
+
+func (c *Controller) InitializePlayer(
+	ctx context.Context,
+	clientID string,
+	request entities.SocketRequest,
+) (err error) {
+	var payload RequestEventPlayerInitialized
 
 	err = json.Unmarshal(request.Payload, &payload)
 	if err != nil {

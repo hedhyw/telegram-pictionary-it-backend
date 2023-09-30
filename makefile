@@ -1,9 +1,12 @@
 GOLANG_CI_LINT_VER:=v1.54.2
 
+include .env
+export
+
 all: lint test
 
 run:
-	go run cmd/server/main.go
+	go run cmd/server/main.go  | tee app.log
 .PHONY: run
 
 vendor:

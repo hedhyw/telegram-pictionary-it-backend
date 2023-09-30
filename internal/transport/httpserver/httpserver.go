@@ -42,7 +42,7 @@ func (s *Server) ListenAndServe() error {
 		ReadTimeout:  s.essentials.Config.ServerTimeout,
 	}
 
-	logger.Debug().Msgf("the server is started, try http://%s/debug/health", s.server.Addr)
+	logger.Info().Msgf("the server is started, try http://%s/debug/health", s.server.Addr)
 
 	return s.server.ListenAndServe()
 }

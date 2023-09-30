@@ -45,13 +45,9 @@ func New(es Essentials) *WebSocketServer {
 func (s WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	chatID := r.URL.Query().Get("chat_id")
 	clientID := r.URL.Query().Get("client_id")
 
-	logger := s.essentials.Logger.With().
-		Str("client", clientID).
-		Str("chat", chatID).
-		Logger()
+	logger := s.essentials.Logger.With().Str("client", clientID).Logger()
 
 	connection, err := s.upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -65,7 +61,7 @@ func (s WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	eventsCh := make(chan json.RawMessage)
 
-	err = s.essentials.Core.RegisterClient(ctx, clientID, chatID, eventsCh)
+	err = s.essentials.Core.RegisterClient(ctx, clientID, eventsCh)
 	if err != nil {
 		logger.Err(err).Msg("failed to register client")
 
@@ -124,7 +120,7 @@ func (s WebSocketServer) runConnectionReader(
 			return
 		}
 
-		logger.Trace().Interface("event", event).Msgf("received websocket event: %s", event)
+		logger.Debug().Interface("event", event).Msgf("received websocket event: %s", event)
 	}
 }
 
@@ -149,7 +145,7 @@ func (s WebSocketServer) runConnectionWriter(
 				continue
 			}
 
-			logger.Trace().Interface("event", event).Msg("sent websocket message")
+			logger.Debug().Interface("event", event).Msg("sent websocket message")
 		}
 	}
 }

@@ -1,9 +1,5 @@
 package player
 
-import (
-	"github.com/brianvoe/gofakeit"
-)
-
 type Model struct {
 	Username string `json:"username"`
 	ClientID string `json:"clientId"`
@@ -15,10 +11,9 @@ type Model struct {
 	RoundWordMatched bool `json:"roundWordMatched"`
 }
 
-func New(clientID string) *Model {
+func New(clientID string, username string) *Model {
 	return &Model{
-		// TODO: check username unique.
-		Username: gofakeit.Username(),
+		Username: username,
 		ClientID: clientID,
 	}
 }

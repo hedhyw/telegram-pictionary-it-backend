@@ -33,6 +33,14 @@ func (h *Hub) AddClient(clientID string, eventsCh chan<- json.RawMessage) *Conne
 	return conn
 }
 
+func (h *Hub) HasClient(clientID string) bool {
+	h.clientsMutex.Lock()
+	_, ok := h.idToClient[clientID]
+	h.clientsMutex.Unlock()
+
+	return ok
+}
+
 func (h *Hub) RemoveClient(clientID string) bool {
 	h.clientsMutex.Lock()
 	defer h.clientsMutex.Unlock()
@@ -65,7 +73,9 @@ func (h *Hub) sendToClient(ctx context.Context, payload any, clientID string) er
 	h.clientsMutex.Unlock()
 
 	if !ok {
-		return semerr.NewNotFoundError(semerr.Error("client is not found"))
+		return semerr.NewNotFoundError(
+			fmt.Errorf("%w: %s", semerr.Error("client is not found"), clientID),
+		)
 	}
 
 	event, err := json.Marshal(payload)

@@ -13,10 +13,7 @@ import (
 )
 
 func main() {
-	// TODO: level from config.
-	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel).With().Timestamp().Logger()
-
-	core := core.New(logger)
+	logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	var config config.Config
 
@@ -25,6 +22,19 @@ func main() {
 
 		return
 	}
+
+	if config.DebugEnabled {
+		logger = logger.Level(zerolog.DebugLevel)
+	} else {
+		logger = logger.Level(zerolog.InfoLevel)
+	}
+
+	logger.Debug().Any("config", config.Sanitized()).Msg("read config")
+
+	core := core.New(core.Essentials{
+		Logger: logger,
+		Config: &config,
+	})
 
 	webSocketHandler := websocketserver.New(websocketserver.Essentials{
 		Logger: logger,

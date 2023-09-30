@@ -3,14 +3,15 @@ package core
 import (
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/game"
+	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/clientshub"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
-	"github.com/rs/zerolog"
 )
 
 type Model struct {
-	logger zerolog.Logger
+	telegramDecoder *telegram.Decoder
+	essentials      Essentials
 
 	clientsHub *clientshub.Hub
 
@@ -20,9 +21,10 @@ type Model struct {
 	chatIDToGame     map[string]*game.Game
 }
 
-func newModel(logger zerolog.Logger) *Model {
+func newModel(es Essentials) *Model {
 	model := &Model{
-		logger: logger,
+		telegramDecoder: telegram.NewDecoder(es.Config.TelegramBotToken),
+		essentials:      es,
 
 		Model: nil,
 
@@ -34,7 +36,8 @@ func newModel(logger zerolog.Logger) *Model {
 
 	model.Model = asyncmodel.New(
 		&stateInitial{model: model},
-		asyncmodel.DefaultLogRequestErrorHandler(logger),
+		asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
+		es.Config.ServerTimeout,
 	)
 
 	return model
