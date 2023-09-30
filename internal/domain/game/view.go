@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"runtime/debug"
 
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/entities"
@@ -22,22 +23,38 @@ func newView(es Essentials, model asyncmodel.ResponseEventConsumer) *view {
 		model:      model,
 	}
 
-	go view.startEventsProcessing(context.TODO())
+	view.startEventsProcessing(context.Background())
 
 	return view
 }
 
 func (v *view) startEventsProcessing(ctx context.Context) {
-	for event := range v.model.ResponseEvents() {
-		err := v.handleEvent(ctx, event)
-		if err != nil {
-			v.essentials.Logger.Err(err).
-				Msgf("failed to handle view event: %s: %+v", event, event)
-		}
+	for i := 0; i < v.essentials.Config.WorkersCount; i++ {
+		go func(i int) {
+			logger := v.essentials.Logger.With().Int("worker", i).Logger()
+
+			for event := range v.model.ResponseEvents() {
+				err := v.handleEvent(ctx, event)
+				if err != nil {
+					logger.Err(err).
+						Msgf("failed to handle view event: %s: %+v", event, event)
+				}
+			}
+		}(i)
 	}
 }
 
 func (v *view) handleEvent(ctx context.Context, event asyncmodel.ResponseEvent) error {
+	defer func() {
+		if r := recover(); r != nil {
+			v.essentials.Logger.Error().Msgf("panic %v", r)
+			debug.PrintStack()
+		}
+	}()
+
+	ctx, cancel := context.WithTimeout(ctx, v.essentials.Config.ServerTimeout)
+	defer cancel()
+
 	targetClientIDs := event.TargetClientIDs()
 
 	if len(targetClientIDs) < 3 {

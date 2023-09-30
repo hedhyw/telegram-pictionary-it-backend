@@ -3,36 +3,36 @@ package asyncmodel
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"time"
-)
 
-const (
-	eventsChannelSize = 1024
+	"github.com/rs/zerolog"
 )
 
 type Model struct {
-	currentState   State
-	requestTimeout time.Duration
+	currentState State
 
-	handleRequestErrorFunc RequestErrorHandlerFunc
+	essentials Essentials
 
 	requestEventsCh  chan RequestEvent
 	responseEventsCh chan ResponseEvent
 }
 
-func New(
-	initialState State,
-	handleRequestErrorFunc RequestErrorHandlerFunc,
-	requestTimeout time.Duration,
-) *Model {
+type Essentials struct {
+	InitialState           State
+	HandleRequestErrorFunc RequestErrorHandlerFunc
+	RequestTimeout         time.Duration
+	Logger                 zerolog.Logger
+	ChannelSize            int
+}
+
+func New(es Essentials) *Model {
 	model := &Model{
-		currentState:   initialState,
-		requestTimeout: requestTimeout,
+		currentState: es.InitialState,
+		essentials:   es,
 
-		handleRequestErrorFunc: handleRequestErrorFunc,
-
-		requestEventsCh:  make(chan RequestEvent, eventsChannelSize),
-		responseEventsCh: make(chan ResponseEvent, eventsChannelSize),
+		requestEventsCh:  make(chan RequestEvent, es.ChannelSize),
+		responseEventsCh: make(chan ResponseEvent, es.ChannelSize),
 	}
 
 	go model.startEventsProcessing(context.Background())
@@ -60,15 +60,25 @@ func (m *Model) startEventsProcessing(ctx context.Context) {
 }
 
 func (m *Model) handleEvent(ctx context.Context, event RequestEvent) {
-	ctx, cancel := context.WithTimeout(ctx, m.requestTimeout)
+	ctx, cancel := context.WithTimeout(ctx, m.essentials.RequestTimeout)
 	defer cancel()
 
+	defer func() {
+		if r := recover(); r != nil {
+			m.essentials.Logger.Error().Msgf("panic %v", r)
+			debug.PrintStack()
+		}
+	}()
+
 	if err := m.currentState.HandleRequestEvent(ctx, event); err != nil {
-		m.handleRequestErrorFunc(fmt.Errorf("%s: %w", m.currentState, err), event)
+		m.essentials.HandleRequestErrorFunc(fmt.Errorf("%s: %w", m.currentState, err), event)
 	}
 }
 
 func (m *Model) EmitResponses(ctx context.Context, events ...ResponseEvent) error {
+	ctx, cancel := context.WithTimeout(ctx, m.essentials.RequestTimeout)
+	defer cancel()
+
 	for _, e := range events {
 		select {
 		case m.responseEventsCh <- e:
@@ -82,6 +92,9 @@ func (m *Model) EmitResponses(ctx context.Context, events ...ResponseEvent) erro
 }
 
 func (m *Model) EmitRequest(ctx context.Context, event RequestEvent) error {
+	ctx, cancel := context.WithTimeout(ctx, m.essentials.RequestTimeout)
+	defer cancel()
+
 	select {
 	case m.requestEventsCh <- event:
 		return nil

@@ -41,9 +41,12 @@ func (s stateFinished) handleEventPlayerJoined(
 ) error {
 	player := s.model.addPlayer(event.ClientID, event.Meta)
 
-	return s.model.EmitResponses(ctx, &ResponseEventPlayerHello{
-		Player: player,
-	}, s.model.responseEventGameStateChanged())
+	return s.model.EmitResponses(ctx,
+		&ResponseEventPlayerHello{
+			Player: player,
+		},
+		s.model.responseEventGameStateChanged(),
+	)
 }
 
 func (s stateFinished) handleEventGameStarted(ctx context.Context) error {

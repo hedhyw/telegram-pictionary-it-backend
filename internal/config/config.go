@@ -10,6 +10,7 @@ type Config struct {
 	ServerWriteBufferSize int           `env:"SERVER_WRITE_BUFFER_SIZE" envDefault:"1024"`
 	TelegramBotToken      string        `env:"TELEGRAM_BOT_TOKEN" envDefault:"change_this_secret"`
 	GameRoundTimeout      time.Duration `env:"GAME_ROUND_TIMEOUT" envDefault:"2m"`
+	WorkersCount          int           `env:"SERVER_WORKERS_COUNT" envDefault:"1024"`
 }
 
 func (cfg Config) Sanitized() Config {

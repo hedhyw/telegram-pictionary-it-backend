@@ -34,11 +34,13 @@ func newModel(es Essentials) *Model {
 		chatIDToGame:     map[string]*game.Game{},
 	}
 
-	model.Model = asyncmodel.New(
-		&stateInitial{model: model},
-		asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
-		es.Config.ServerTimeout,
-	)
+	model.Model = asyncmodel.New(asyncmodel.Essentials{
+		InitialState:           &stateInitial{model: model},
+		HandleRequestErrorFunc: asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
+		RequestTimeout:         es.Config.ServerTimeout,
+		Logger:                 es.Logger,
+		ChannelSize:            es.Config.WorkersCount,
+	})
 
 	return model
 }

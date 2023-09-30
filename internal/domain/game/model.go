@@ -45,11 +45,13 @@ func newModel(es Essentials) *Model {
 		round:       0,
 	}
 
-	model.Model = asyncmodel.New(
-		&stateInitial{model: model},
-		asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
-		es.Config.ServerTimeout,
-	)
+	model.Model = asyncmodel.New(asyncmodel.Essentials{
+		InitialState:           &stateInitial{model: model},
+		HandleRequestErrorFunc: asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
+		RequestTimeout:         es.Config.ServerTimeout,
+		Logger:                 es.Logger,
+		ChannelSize:            es.Config.WorkersCount,
+	})
 
 	return model
 }
@@ -168,7 +170,7 @@ func (m *Model) runGameAutoFinisher() {
 	defer finishOnce.Do(func() { close(m.autoFinisherDoneCh) })
 	logger := m.essentials.Logger
 
-	timer := time.NewTimer(m.essentials.Config.ServerTimeout)
+	timer := time.NewTimer(m.essentials.Config.GameRoundTimeout)
 	defer timer.Stop()
 
 	select {
