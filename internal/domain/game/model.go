@@ -3,6 +3,8 @@ package game
 import (
 	"context"
 	"math/rand"
+	"sync"
+	"time"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 
@@ -10,6 +12,9 @@ import (
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/player"
 )
+
+// const gameDuration = 2 * time.Minute
+const gameDuration = 10 * time.Second
 
 type Model struct {
 	essentials Essentials
@@ -20,6 +25,10 @@ type Model struct {
 	players     []*player.Model
 	word        string
 	round       int
+	finishAt    time.Time
+
+	roundDoneCh        chan struct{}
+	autoFinisherDoneCh chan struct{}
 }
 
 func newModel(es Essentials) *Model {
@@ -64,8 +73,9 @@ func (m *Model) setRandomWord() {
 
 func (m *Model) responseEventGameStateChanged() *ResponseEventGameStateChanged {
 	return &ResponseEventGameStateChanged{
-		Players: m.players,
-		State:   m.State(),
+		Players:  m.players,
+		State:    m.State(),
+		FinishAt: m.finishAt.UTC(),
 	}
 }
 
@@ -87,10 +97,58 @@ func (m *Model) getLeader() *player.Model {
 	return m.players[m.leaderIndex]
 }
 
+func (m *Model) finishGame(ctx context.Context) error {
+	logger := m.essentials.Logger
+
+	close(m.roundDoneCh)
+
+	select {
+	case <-m.autoFinisherDoneCh:
+		logger.Debug().Msg("game is finished")
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+
+	m.SetState(&stateFinished{model: m})
+
+	return m.EmitResponses(ctx, m.responseEventGameStateChanged())
+}
+
+func (m *Model) runGameAutoFinisher() {
+	finishOnce := &sync.Once{}
+	defer finishOnce.Do(func() { close(m.autoFinisherDoneCh) })
+	logger := m.essentials.Logger
+
+	timer := time.NewTimer(gameDuration)
+	defer timer.Stop()
+
+	select {
+	case <-timer.C:
+		ctx := context.Background()
+
+		logger.Debug().Msg("game is timeouted")
+
+		finishOnce.Do(func() { close(m.autoFinisherDoneCh) })
+
+		err := m.finishGame(ctx)
+		if err != nil {
+			logger.Err(err).Msg("failed to finish the game")
+		}
+	case <-m.roundDoneCh:
+		logger.Debug().Msg("game auto finisher stopped")
+	}
+}
+
 func (m *Model) startGame(ctx context.Context) error {
 	if len(m.players) <= 1 {
 		return semerr.NewBadRequestError(errNotEnoughPlayers)
 	}
+
+	m.roundDoneCh = make(chan struct{})
+	m.autoFinisherDoneCh = make(chan struct{})
+
+	m.finishAt = time.Now().Add(gameDuration)
+	go m.runGameAutoFinisher()
 
 	m.round++
 

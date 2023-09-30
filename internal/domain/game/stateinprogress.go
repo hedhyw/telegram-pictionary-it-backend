@@ -85,7 +85,10 @@ func (s stateInProgress) handleWordGuessAttempted(
 		p.SetRoundWordMatched()
 
 		if s.model.isEveryoneGuessed() {
-			s.model.SetState(&stateFinished{model: s.model})
+			err := s.model.finishGame(ctx)
+			if err != nil {
+				return fmt.Errorf("finishing game: %w", err)
+			}
 		}
 
 		return s.model.EmitResponses(ctx,

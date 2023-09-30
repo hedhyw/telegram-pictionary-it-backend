@@ -48,7 +48,7 @@ func (v *view) handleEvent(ctx context.Context, event asyncmodel.ResponseEvent) 
 
 	return v.essentials.ClientsHub.SendToClients(
 		ctx,
-		entities.NewSocketEventPayload(event),
+		entities.NewSocketResponse(event),
 		targetClientIDs...,
 	)
 }

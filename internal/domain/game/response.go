@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/player"
@@ -27,7 +28,8 @@ func (e ResponseEventCanvasChanged) TargetClientIDs() []string {
 func (e ResponseEventCanvasChanged) IsResponseEvent() {}
 
 type ResponseEventGameStateChanged struct {
-	Players []*player.Model `json:"players"`
+	Players  []*player.Model `json:"players"`
+	FinishAt time.Time       `json:"finishAt"`
 
 	State asyncmodel.State `json:"state"`
 }

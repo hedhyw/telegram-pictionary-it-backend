@@ -15,9 +15,9 @@ type SocketResponse struct {
 	Payload any    `json:"payload"`
 }
 
-func NewSocketEventPayload(event fmt.Stringer) *SocketResponse {
+func NewSocketResponse(payload fmt.Stringer) *SocketResponse {
 	return &SocketResponse{
-		Name:    event.String(),
-		Payload: event,
+		Name:    payload.String(),
+		Payload: payload,
 	}
 }

@@ -79,7 +79,6 @@ func (c *Controller) StartGame(
 	clientID string,
 	_ entities.SocketRequest,
 ) (err error) {
-	// TODO: emit from type.
 	return c.model.EmitRequest(ctx, &RequestEventGameStarted{
 		ClientID: clientID,
 	})

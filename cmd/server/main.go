@@ -1,9 +1,7 @@
 package main
 
 import (
-	"math/rand"
 	"os"
-	"time"
 
 	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/core"
@@ -15,8 +13,6 @@ import (
 )
 
 func main() {
-	rand.Seed(time.Now().Unix())
-
 	// TODO: level from config.
 	logger := zerolog.New(os.Stdout).Level(zerolog.DebugLevel).With().Timestamp().Logger()
 

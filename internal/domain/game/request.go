@@ -21,7 +21,6 @@ type RequestEventPlayerJoined struct {
 	ClientID string
 }
 
-// TODO: rename to hello.
 func (e RequestEventPlayerJoined) String() string { return fmt.Sprintf("%T", e) }
 
 func (e *RequestEventPlayerJoined) IsRequestEvent() {}
