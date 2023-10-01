@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/stretchr/testify/assert"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"runtime/debug"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/entities"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
 )
 
 // TODO: exported function comments.

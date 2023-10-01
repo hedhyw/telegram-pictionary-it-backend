@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rs/zerolog"

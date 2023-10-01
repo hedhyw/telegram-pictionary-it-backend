@@ -1,10 +1,10 @@
 package core
 
 import (
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/game"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/clientshub"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/game"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/transport/clientshub"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 )

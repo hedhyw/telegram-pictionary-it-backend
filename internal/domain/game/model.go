@@ -12,10 +12,10 @@ import (
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/samber/lo"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/assets"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/player"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/assets"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/player"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 )
 
 type Model struct {

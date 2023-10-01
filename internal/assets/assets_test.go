@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/assets"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/assets"
 )
 
 func TestWords(t *testing.T) {

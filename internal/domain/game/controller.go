@@ -3,8 +3,8 @@ package game
 import (
 	"context"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 )
 
 type Controller struct {

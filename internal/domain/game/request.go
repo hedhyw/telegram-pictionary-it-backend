@@ -3,7 +3,7 @@ package game
 import (
 	"fmt"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 )
 
 type RequestEventCanvasChanged struct {

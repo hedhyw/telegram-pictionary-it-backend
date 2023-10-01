@@ -7,8 +7,8 @@ import (
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/entities"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
 )
 
 type stateFinished struct {

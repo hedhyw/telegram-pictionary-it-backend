@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/asyncmodel"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/entities"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/game"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/asyncmodel"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/game"
 )
 
 type stateInitial struct {

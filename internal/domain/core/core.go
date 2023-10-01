@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/rs/zerolog"

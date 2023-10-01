@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/assets"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/assets"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rs/zerolog"

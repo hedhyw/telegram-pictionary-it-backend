@@ -6,8 +6,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/core"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/core"
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"

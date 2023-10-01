@@ -4,8 +4,8 @@ import (
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/rs/zerolog"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/clientshub"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/transport/clientshub"
 )
 
 const (

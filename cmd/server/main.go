@@ -4,12 +4,12 @@ import (
 	"context"
 	"os"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/core"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/httpserver"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/telegrambot"
-	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/websocketserver"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/core"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/transport/httpserver"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/transport/telegrambot"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/transport/websocketserver"
 
 	"github.com/caarlos0/env/v6"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"

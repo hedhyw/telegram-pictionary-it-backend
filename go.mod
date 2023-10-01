@@ -1,4 +1,4 @@
-module github.com/hedhyw/telegram-pictionary-backend
+module github.com/hedhyw/telegram-pictionary-it-backend
 
 go 1.21.1
 

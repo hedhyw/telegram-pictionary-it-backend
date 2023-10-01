@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
+	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
 )
 
 // TODO: graceful shutdown.
