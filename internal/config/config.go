@@ -11,6 +11,7 @@ type Config struct {
 	TelegramBotToken      string        `env:"TELEGRAM_BOT_TOKEN" envDefault:"change_this_secret"`
 	GameRoundTimeout      time.Duration `env:"GAME_ROUND_TIMEOUT" envDefault:"2m"`
 	WorkersCount          int           `env:"SERVER_WORKERS_COUNT" envDefault:"1024"`
+	AnimationURL          string        `json:"ANIMATION_URL" envDefault:"https://64.media.tumblr.com/dcfe9790135b1ff3aa08a06df31419d7/tumblr_pcw8kaJLYO1qhy6c9o1_r1_500.gifv"`
 }
 
 func (cfg Config) Sanitized() Config {

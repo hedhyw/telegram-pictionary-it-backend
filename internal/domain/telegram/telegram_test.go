@@ -4,9 +4,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
 
+	"github.com/hedhyw/semerr/pkg/v1/semerr"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +15,8 @@ const (
 	chatInstance   = "1"
 	chatType       = "private"
 	expectedHash   = "6d8a82ff4a2279b0927c87f3f4afc9171fe6ea1bae046ba329d777033a7a5303"
-	testBotToken   = "fake_bot_token"
+	// nolint: gosec // It is a fake token for tests.
+	testBotToken = "fake_bot_token"
 )
 
 func TestDecodeInitDataSuccess(t *testing.T) {

@@ -1,14 +1,18 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/hedhyw/telegram-pictionary-backend/internal/config"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/core"
+	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/telegram"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/httpserver"
+	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/telegrambot"
 	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/websocketserver"
 
 	"github.com/caarlos0/env/v6"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/rs/zerolog"
 )
 
@@ -31,6 +35,13 @@ func main() {
 
 	logger.Debug().Any("config", config.Sanitized()).Msg("read config")
 
+	err := tgbotapi.SetLogger(telegram.LoggerAdapter{
+		Logger: logger,
+	})
+	if err != nil {
+		logger.Err(err).Msg("setting telegram logger")
+	}
+
 	core := core.New(core.Essentials{
 		Logger: logger,
 		Config: &config,
@@ -48,7 +59,21 @@ func main() {
 		WebSocketHandler: webSocketHandler,
 	})
 
-	err := httpServer.ListenAndServe()
+	telegramBot := telegrambot.New(telegrambot.Essentials{
+		Config: config,
+		Logger: logger,
+	})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go func() {
+		if err := telegramBot.Run(ctx); err != nil {
+			logger.Err(err).Msg("running telegram bot")
+		}
+	}()
+
+	err = httpServer.ListenAndServe()
 	if err != nil {
 		logger.Fatal().Err(err).Msg("failed to parse config")
 

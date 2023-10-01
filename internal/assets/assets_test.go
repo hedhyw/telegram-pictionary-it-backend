@@ -14,3 +14,9 @@ func TestWords(t *testing.T) {
 	assert.Contains(t, words, "Flower")
 	assert.NotContains(t, words, "")
 }
+
+func TestHello(t *testing.T) {
+	hello := assets.Hello()
+
+	assert.Contains(t, hello, "Pictionary It")
+}
