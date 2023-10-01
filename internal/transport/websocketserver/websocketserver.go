@@ -31,8 +31,17 @@ func New(es Essentials) *WebSocketServer {
 		ReadBufferSize:   es.Config.ServerReadBufferSize,
 		WriteBufferSize:  es.Config.ServerWriteBufferSize,
 		CheckOrigin: func(r *http.Request) bool {
-			// TODO:
-			return true
+			actualOrigin := r.Header["Origin"]
+			if len(actualOrigin) == 0 {
+				return true
+			}
+
+			expectedOrigin := es.Config.ServerCheckOrigin
+			ok := actualOrigin[0] == expectedOrigin
+
+			es.Logger.Debug().Msgf("checking origin for %s: actual %q, expected %q, ok %t", r.URL, actualOrigin[0], expectedOrigin, ok)
+
+			return ok
 		},
 	}
 

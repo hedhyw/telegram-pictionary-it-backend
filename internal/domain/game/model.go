@@ -20,14 +20,19 @@ import (
 
 type Model struct {
 	essentials Essentials
+	rand       *rand.Rand
 
 	*asyncmodel.Model
 
 	leaderIndex int
 	players     []*player.Model
 	word        string
+	hint        string
 	round       int
 	finishAt    time.Time
+
+	allWords      []string
+	allWordsIndex int
 
 	roundDoneCh        chan struct{}
 	autoFinisherDoneCh chan struct{}
@@ -37,12 +42,22 @@ func newModel(es Essentials) *Model {
 	model := &Model{
 		essentials: es,
 
+		// nolint: gosec // It is a game.
+		rand: rand.New(rand.NewSource(time.Now().UnixMilli())),
+
 		Model: nil,
 
-		leaderIndex: 0,
-		players:     []*player.Model{},
-		word:        "",
-		round:       0,
+		allWords:      assets.Words(),
+		allWordsIndex: 0,
+
+		leaderIndex:        0,
+		players:            []*player.Model{},
+		word:               "",
+		hint:               "",
+		round:              0,
+		finishAt:           time.Time{},
+		roundDoneCh:        nil,
+		autoFinisherDoneCh: nil,
 	}
 
 	model.Model = asyncmodel.New(asyncmodel.Essentials{
@@ -116,17 +131,32 @@ func getUsername(meta *telegram.InitDataMeta) string {
 }
 
 func (m *Model) setRandomWord() {
-	words := assets.Words()
-	//nolint: gosec // It is a game.
-	index := rand.Intn(len(words))
-	m.word = words[index]
+	if m.allWordsIndex == 0 {
+		m.rand.Shuffle(len(m.allWords), func(i, j int) {
+			m.allWords[i], m.allWords[j] = m.allWords[j], m.allWords[i]
+		})
+	}
+
+	m.allWordsIndex = (m.allWordsIndex + 1) % len(m.allWords)
+	word := m.allWords[m.allWordsIndex]
+
+	m.word = word
+	m.hint = prepareHint(word, m.rand)
 }
 
 func (m *Model) responseEventGameStateChanged() *ResponseEventGameStateChanged {
+	var optionalWord string
+
+	if _, ok := m.State().(*stateFinished); ok {
+		optionalWord = m.word
+	}
+
 	return &ResponseEventGameStateChanged{
 		Players:  m.players,
 		State:    m.State(),
 		FinishAt: m.finishAt.UTC(),
+		Word:     optionalWord,
+		Hint:     m.hint,
 	}
 }
 

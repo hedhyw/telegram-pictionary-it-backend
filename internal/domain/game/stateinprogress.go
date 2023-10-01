@@ -23,7 +23,7 @@ func (s *stateInProgress) HandleRequestEvent(
 	case *RequestEventGameStarted:
 		return semerr.NewBadRequestError(errGameInProgress)
 	case *RequestEventPlayerJoined:
-		return semerr.NewBadRequestError(errGameInProgress)
+		return s.handleEventPlayerJoined(ctx, event)
 	case *RequestEventWordGuessAttempted:
 		return s.handleWordGuessAttempted(ctx, event)
 	case *RequestEventCanvasChanged:
@@ -39,7 +39,10 @@ func (s stateInProgress) handleCanvasChanged(
 	ctx context.Context,
 	event *RequestEventCanvasChanged,
 ) error {
-	// TODO: verify that client is a leader.
+	if s.model.getLeader().ClientID != event.ClientID {
+		return errPlayerNotLeader
+	}
+
 	return s.model.EmitResponses(ctx, &ResponseEventCanvasChanged{
 		Players:       s.model.players,
 		ActorClientID: event.ClientID,
@@ -51,7 +54,9 @@ func (s stateInProgress) handleWordGuessAttempted(
 	ctx context.Context,
 	event *RequestEventWordGuessAttempted,
 ) error {
-	// TODO: verify that client is not a leader.
+	if s.model.getLeader().ClientID == event.ClientID {
+		return errPlayerLeader
+	}
 
 	logger := s.model.essentials.Logger.With().Str("client", event.ClientID).Logger()
 
@@ -136,4 +141,18 @@ func (s stateInProgress) String() string {
 
 func (s stateInProgress) MarshalText() (text []byte, err error) {
 	return []byte(s.String()), nil
+}
+
+func (s stateInProgress) handleEventPlayerJoined(
+	ctx context.Context,
+	event *RequestEventPlayerJoined,
+) error {
+	player := s.model.addPlayer(event.ClientID, event.Meta)
+
+	return s.model.EmitResponses(ctx,
+		&ResponseEventPlayerHello{
+			Player: player,
+		},
+		s.model.responseEventGameStateChanged(),
+	)
 }

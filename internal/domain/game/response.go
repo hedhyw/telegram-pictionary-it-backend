@@ -32,6 +32,9 @@ type ResponseEventGameStateChanged struct {
 	FinishAt time.Time       `json:"finishAt"`
 
 	State asyncmodel.State `json:"state"`
+
+	Word string `json:"word"`
+	Hint string `json:"hint"`
 }
 
 func (e ResponseEventGameStateChanged) String() string { return fmt.Sprintf("%T", e) }

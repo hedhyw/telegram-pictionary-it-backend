@@ -8,7 +8,6 @@ import (
 	"github.com/hedhyw/telegram-pictionary-backend/internal/domain/entities"
 )
 
-// TODO: async view.
 // TODO: exported function comments.
 // TODO: tests.
 type view struct {

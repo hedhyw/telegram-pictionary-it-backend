@@ -1,12 +1,17 @@
-GOLANG_CI_LINT_VER:=v1.54.2
+GOLANG_CI_LINT_VER?=v1.54.2
+OUT_BUILD?=./bin/server
 
 include .env
 export
 
 all: lint test
 
+build:
+	go build -o ${OUT_BUILD} cmd/server/main.go
+.PHONY: build
+
 run:
-	go run cmd/server/main.go  | tee app.log
+	go run cmd/server/main.go | tee app.log
 .PHONY: run
 
 vendor:

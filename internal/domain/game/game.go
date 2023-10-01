@@ -8,14 +8,14 @@ import (
 	"github.com/hedhyw/telegram-pictionary-backend/internal/transport/clientshub"
 )
 
-// TODO: add player during game in progress.
-
 const (
 	errGameInProgress      semerr.Error = "the game is in progress"
 	errNotEnoughPlayers    semerr.Error = "not enough players"
 	errGameIsNotInProgress semerr.Error = "the game has not been started yet"
 	errWordNotMatch        semerr.Error = "word is not matched"
 	errPlayerNotFound      semerr.Error = "player is not found"
+	errPlayerNotLeader     semerr.Error = "player is not leader"
+	errPlayerLeader        semerr.Error = "player is leader"
 )
 
 type Game struct {
