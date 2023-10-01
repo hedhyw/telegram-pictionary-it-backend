@@ -1,3 +1,5 @@
+// Package telegram contains the common functions and structures for working
+// with Telegram messenger such as decoding, verification, etc.
 package telegram
 
 import (
@@ -40,7 +42,7 @@ func NewDecoder(botToken string) *Decoder {
 func (d *Decoder) DecodeInitData(initDataRaw string) (*InitDataMeta, error) {
 	metaValues, err := url.ParseQuery(initDataRaw)
 	if err != nil {
-		return nil, fmt.Errorf("parsing query: %w", err)
+		return nil, semerr.NewBadRequestError(fmt.Errorf("parsing query: %w", err))
 	}
 
 	err = verifyHash(metaValues, d.botToken)
@@ -59,12 +61,18 @@ func (d *Decoder) DecodeInitData(initDataRaw string) (*InitDataMeta, error) {
 	return &meta, nil
 }
 
+// verifyHash verifies the hash of URL-encoded WebAppData.
+// values should include "hash" key.
 func verifyHash(values url.Values, botToken string) error {
 	const (
 		keyHash = "hash"
 
 		labelData = "WebAppData"
 	)
+
+	if botToken == "" {
+		return semerr.NewBadRequestError(semerr.Error("empty bot token"))
+	}
 
 	actualHash := values.Get(keyHash)
 	if actualHash == "" {
@@ -102,6 +110,8 @@ func verifyHash(values url.Values, botToken string) error {
 	return nil
 }
 
+// calculateHashSum generates a HMAC-SHA256 hash for provided value
+// using the given secret.
 func calculateHashSum(value string, secret []byte) []byte {
 	hasher := hmac.New(sha256.New, secret)
 
