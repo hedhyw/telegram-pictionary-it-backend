@@ -1,8 +1,10 @@
 GOLANG_CI_LINT_VER?=v1.54.2
 OUT_BUILD?=./bin/server
 
-include .env
-export
+ifneq (,$(wildcard ./.env))
+	include .env
+	export
+endif
 
 all: lint test
 
