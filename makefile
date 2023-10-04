@@ -1,5 +1,6 @@
 GOLANG_CI_LINT_VER?=v1.54.2
 OUT_BUILD?=./bin/server
+IMAGE?=hedhyw/telegram-pictionary-it-backend
 
 ifneq (,$(wildcard ./.env))
 	include .env
@@ -28,6 +29,11 @@ test:
 lint: bin/golangci-lint
 	./bin/golangci-lint run
 .PHONY: lint
+
+image:
+	docker build -t "${IMAGE}" .
+	docker push "${IMAGE}"
+.PHONY: image
 
 bin/golangci-lint:
 	curl \
