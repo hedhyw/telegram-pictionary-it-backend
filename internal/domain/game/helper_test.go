@@ -105,6 +105,13 @@ func TestPrepareHintForSinprepareHintForSingleWord(t *testing.T) {
 		hint := prepareHintForSingleWord("abc", -1, newZeroSeedRand())
 		assert.Equal(t, "___", hint)
 	})
+
+	t.Run("lowercase", func(t *testing.T) {
+		t.Parallel()
+
+		hint := prepareHintForSingleWord("ABC", 16, newZeroSeedRand())
+		assert.Equal(t, "abc", hint)
+	})
 }
 
 func newZeroSeedRand() *rand.Rand {

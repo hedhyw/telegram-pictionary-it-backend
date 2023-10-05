@@ -53,5 +53,5 @@ func prepareHintForSingleWord(word string, maxHintsCount int, rand *rand.Rand) s
 		hintRunes[hintIndex] = wordRunes[hintIndex]
 	}
 
-	return string(hintRunes)
+	return strings.ToLower(string(hintRunes))
 }
