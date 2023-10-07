@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 
@@ -48,6 +49,7 @@ func (s StateInProgress) handleCanvasChanged(
 	}
 
 	return s.model.EmitResponses(ctx, &ResponseEventCanvasChanged{
+		UnixNano:      time.Now().UnixNano(),
 		Players:       s.model.getPlayers(),
 		ActorClientID: event.ClientID,
 		ImageBase64:   event.ImageBase64,

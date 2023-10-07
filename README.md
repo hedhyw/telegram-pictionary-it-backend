@@ -1,6 +1,8 @@
 # Telegram Pictionary It (Backend)
 
-This a backend for [https://github.com/hedhyw/telegram-pictionary-it].
+This a backend for Telegram Mini App "Pictionary It".
+
+Check [this](https://github.com/hedhyw/telegram-pictionary-it) if you want to run this backend with [the frontend](https://github.com/hedhyw/telegram-pictionary-it-frontend).
 
 ## Requirements
 
@@ -9,16 +11,18 @@ This a backend for [https://github.com/hedhyw/telegram-pictionary-it].
 
 ## Running
 
-### Prepare config
-
 ```shell
+# Prepare config.
 cp .env.example .env
-```
 
-### Run the server
+# Pull dependencies.
+make vendor
 
-```shell
-make vendor run
+# Run the server. Make sure that the port :8081 is available.
+make run
+
+# Check that it works.
+curl http://localhost:8081/debug/health
 ```
 
 ## Project structure
@@ -34,7 +38,7 @@ make vendor run
 
 ## MiniApp data verification
 
-An example of how to validate data received via the Telegram's Mini App, can be found [here](internal/domain/telegram/telegram.go).
+An example of validating data received through the Telegram Mini App can be found [here](internal/domain/telegram/telegram.go).
 
 ## License
 

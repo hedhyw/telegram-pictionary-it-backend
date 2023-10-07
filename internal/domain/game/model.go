@@ -153,6 +153,7 @@ func (m *Model) responseEventGameStateChanged() *ResponseEventGameStateChanged {
 	}
 
 	return &ResponseEventGameStateChanged{
+		UnixNano: time.Now().UnixNano(),
 		Players:  m.getPlayers(),
 		State:    m.State().String(),
 		FinishAt: m.finishAt.UTC(),

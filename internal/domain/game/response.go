@@ -12,6 +12,8 @@ import (
 // ResponseEventCanvasChanged implements asyncmodel.ResponseEvent.
 // It notifies other players about new drawing.
 type ResponseEventCanvasChanged struct {
+	UnixNano int64 `json:"unixNano"`
+
 	Players       []player.Model `json:"-"`
 	ActorClientID string         `json:"actorClientId"`
 
@@ -34,6 +36,8 @@ func (e ResponseEventCanvasChanged) IsResponseEvent() {}
 // ResponseEventGameStateChanged implements asyncmodel.ResponseEvent.
 // It notifies all players about a new game state.
 type ResponseEventGameStateChanged struct {
+	UnixNano int64 `json:"unixNano"`
+
 	Players  []player.Model `json:"players"`
 	FinishAt time.Time      `json:"finishAt"`
 
