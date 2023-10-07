@@ -1,6 +1,6 @@
 GOLANG_CI_LINT_VER?=v1.54.2
 OUT_BUILD?=./bin/server
-IMAGE?=hedhyw/telegram-pictionary-it-backend
+IMAGE?=example_replace_it
 
 ifneq (,$(wildcard ./.env))
 	include .env

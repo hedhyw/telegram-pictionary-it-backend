@@ -40,6 +40,19 @@ curl http://localhost:8081/debug/health
 
 An example of validating data received through the Telegram Mini App can be found [here](internal/domain/telegram/telegram.go).
 
+## Docker image
+
+In order to build and push the backend docker image, declare the following variables in [.env](.env):
+
+```
+IMAGE=image_name_change_it
+```
+
+Then run:
+```shell
+make image
+```
+
 ## License
 
 [MIT](./LICENSE).
