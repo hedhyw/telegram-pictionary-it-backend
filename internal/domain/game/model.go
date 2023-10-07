@@ -186,7 +186,26 @@ func (m *Model) getLeader() *player.Model {
 	return m.players[m.leaderIndex]
 }
 
+func (m *Model) getLeaderScore() int {
+	maxScore := int(m.essentials.Config.GameRoundTimeout.Seconds())
+
+	// finishedCount doesn't include the leader so the leader cannot get
+	// the maximum score.
+	finishedCount := lo.CountBy(m.players, func(player *player.Model) bool {
+		return player.RoundWordMatched
+	})
+	totalPlayers := len(m.players)
+
+	if totalPlayers == 0 {
+		return 0
+	}
+
+	return maxScore * finishedCount / totalPlayers
+}
+
 func (m *Model) finishGame(ctx context.Context) error {
+	m.getLeader().IncRoundScore(m.getLeaderScore())
+
 	logger := m.essentials.Logger
 
 	close(m.roundDoneCh)

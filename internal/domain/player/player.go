@@ -18,9 +18,13 @@ func New(clientID string, username string) *Model {
 	}
 }
 
-func (m *Model) SetRoundWordMatched() {
+func (m *Model) SetRoundWordMatched(roundScore int) {
 	m.RoundWordMatched = true
-	m.RoundScore++
+	m.IncRoundScore(roundScore + 1)
+}
+
+func (m *Model) IncRoundScore(roundScore int) {
+	m.RoundScore += roundScore
 	m.Score += m.RoundScore
 }
 

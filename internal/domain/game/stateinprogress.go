@@ -95,7 +95,7 @@ func (s StateInProgress) handleWordGuessAttempted(
 
 		logger.Debug().Msgf("client guessed the word %s", event.Word)
 
-		p.SetRoundWordMatched()
+		p.SetRoundWordMatched(int(time.Until(s.model.finishAt).Seconds()))
 
 		if s.model.isEveryoneGuessed() {
 			err := s.model.finishGame(ctx)
