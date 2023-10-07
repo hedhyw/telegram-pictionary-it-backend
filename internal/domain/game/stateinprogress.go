@@ -11,11 +11,15 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
 )
 
-type stateInProgress struct {
+// StateInProgress represents on-going game. The leader draws a picture,
+// and guessers are trying to guess the word. It might be finished after
+// some timeout.
+type StateInProgress struct {
 	model *Model
 }
 
-func (s *stateInProgress) HandleRequestEvent(
+// HandleRequestEvent implements asyncmodel.State.
+func (s *StateInProgress) HandleRequestEvent(
 	ctx context.Context,
 	event asyncmodel.RequestEvent,
 ) error {
@@ -35,7 +39,7 @@ func (s *stateInProgress) HandleRequestEvent(
 	}
 }
 
-func (s stateInProgress) handleCanvasChanged(
+func (s StateInProgress) handleCanvasChanged(
 	ctx context.Context,
 	event *RequestEventCanvasChanged,
 ) error {
@@ -44,13 +48,13 @@ func (s stateInProgress) handleCanvasChanged(
 	}
 
 	return s.model.EmitResponses(ctx, &ResponseEventCanvasChanged{
-		Players:       s.model.players,
+		Players:       s.model.getPlayers(),
 		ActorClientID: event.ClientID,
 		ImageBase64:   event.ImageBase64,
 	})
 }
 
-func (s stateInProgress) handleWordGuessAttempted(
+func (s StateInProgress) handleWordGuessAttempted(
 	ctx context.Context,
 	event *RequestEventWordGuessAttempted,
 ) error {
@@ -65,7 +69,7 @@ func (s stateInProgress) handleWordGuessAttempted(
 
 	if actualWord != expectedWord {
 		errEvent := s.model.EmitResponses(ctx, &ResponseEventPlayerGuessFailed{
-			Players: s.model.players,
+			Players: s.model.getPlayers(),
 
 			ActorClientID: event.ClientID,
 			Word:          event.Word,
@@ -100,7 +104,7 @@ func (s stateInProgress) handleWordGuessAttempted(
 
 		return s.model.EmitResponses(ctx,
 			&ResponseEventPlayerGuessed{
-				Players:  s.model.players,
+				Players:  s.model.getPlayers(),
 				ClientID: event.ClientID,
 			},
 			s.model.responseEventGameStateChanged(),
@@ -110,7 +114,7 @@ func (s stateInProgress) handleWordGuessAttempted(
 	return semerr.NewNotFoundError(errPlayerNotFound)
 }
 
-func (s stateInProgress) handlePlayerRemoved(
+func (s StateInProgress) handlePlayerRemoved(
 	ctx context.Context,
 	event *RequestEventPlayerRemoved,
 ) error {
@@ -135,15 +139,17 @@ func (s stateInProgress) handlePlayerRemoved(
 	return s.model.removePlayer(ctx, event.ClientID)
 }
 
-func (s stateInProgress) String() string {
+func (s StateInProgress) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
-func (s stateInProgress) MarshalText() (text []byte, err error) {
+// String implements fmt.Stringer and asyncmodel.State.
+func (s StateInProgress) MarshalText() (text []byte, err error) {
 	return []byte(s.String()), nil
 }
 
-func (s stateInProgress) handleEventPlayerJoined(
+// MarshalText implements encoding.TextMarshaler and asyncmodel.State.
+func (s StateInProgress) handleEventPlayerJoined(
 	ctx context.Context,
 	event *RequestEventPlayerJoined,
 ) error {
@@ -151,7 +157,7 @@ func (s stateInProgress) handleEventPlayerJoined(
 
 	return s.model.EmitResponses(ctx,
 		&ResponseEventPlayerHello{
-			Player: player,
+			Player: *player,
 		},
 		s.model.responseEventGameStateChanged(),
 	)

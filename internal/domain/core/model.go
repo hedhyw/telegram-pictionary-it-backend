@@ -9,6 +9,7 @@ import (
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 )
 
+// Model holds active games.
 type Model struct {
 	telegramDecoder *telegram.Decoder
 	essentials      Essentials
@@ -35,7 +36,7 @@ func newModel(es Essentials) *Model {
 	}
 
 	model.Model = asyncmodel.New(asyncmodel.Essentials{
-		InitialState:           &stateInitial{model: model},
+		InitialState:           &StateInitial{model: model},
 		HandleRequestErrorFunc: asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
 		RequestTimeout:         es.Config.ServerTimeout,
 		Logger:                 es.Logger,

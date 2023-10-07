@@ -11,11 +11,14 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
 )
 
-type stateFinished struct {
+// StateFinished is a state of the game after finishing the round. Players
+// can start a new game at this state.
+type StateFinished struct {
 	model *Model
 }
 
-func (s *stateFinished) HandleRequestEvent(
+// HandleRequestEvent implements asyncmodel.State.
+func (s *StateFinished) HandleRequestEvent(
 	ctx context.Context,
 	event asyncmodel.RequestEvent,
 ) error {
@@ -35,7 +38,7 @@ func (s *stateFinished) HandleRequestEvent(
 	}
 }
 
-func (s stateFinished) handleEventPlayerJoined(
+func (s StateFinished) handleEventPlayerJoined(
 	ctx context.Context,
 	event *RequestEventPlayerJoined,
 ) error {
@@ -43,20 +46,22 @@ func (s stateFinished) handleEventPlayerJoined(
 
 	return s.model.EmitResponses(ctx,
 		&ResponseEventPlayerHello{
-			Player: player,
+			Player: *player,
 		},
 		s.model.responseEventGameStateChanged(),
 	)
 }
 
-func (s stateFinished) handleEventGameStarted(ctx context.Context) error {
+func (s StateFinished) handleEventGameStarted(ctx context.Context) error {
 	return s.model.startGame(ctx)
 }
 
-func (s stateFinished) String() string {
+// String implements fmt.Stringer and asyncmodel.State.
+func (s StateFinished) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
-func (s stateFinished) MarshalText() (text []byte, err error) {
+// MarshalText implements encoding.TextMarshaler and asyncmodel.State.
+func (s StateFinished) MarshalText() (text []byte, err error) {
 	return []byte(s.String()), nil
 }

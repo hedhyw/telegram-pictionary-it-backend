@@ -18,6 +18,7 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/telegram"
 )
 
+// Model handles game business-logic.
 type Model struct {
 	essentials Essentials
 	rand       *rand.Rand
@@ -61,7 +62,7 @@ func newModel(es Essentials) *Model {
 	}
 
 	model.Model = asyncmodel.New(asyncmodel.Essentials{
-		InitialState:           &stateInitial{model: model},
+		InitialState:           &StateInitial{model: model},
 		HandleRequestErrorFunc: asyncmodel.DefaultLogRequestErrorHandler(es.Logger),
 		RequestTimeout:         es.Config.ServerTimeout,
 		Logger:                 es.Logger,
@@ -147,17 +148,23 @@ func (m *Model) setRandomWord() {
 func (m *Model) responseEventGameStateChanged() *ResponseEventGameStateChanged {
 	var optionalWord string
 
-	if _, ok := m.State().(*stateFinished); ok {
+	if _, ok := m.State().(*StateFinished); ok {
 		optionalWord = m.word
 	}
 
 	return &ResponseEventGameStateChanged{
-		Players:  m.players,
-		State:    m.State(),
+		Players:  m.getPlayers(),
+		State:    m.State().String(),
 		FinishAt: m.finishAt.UTC(),
 		Word:     optionalWord,
 		Hint:     m.hint,
 	}
+}
+
+func (m *Model) getPlayers() []player.Model {
+	return lo.Map(m.players, func(player *player.Model, _ int) player.Model {
+		return *player
+	})
 }
 
 func (m *Model) isEveryoneGuessed() bool {
@@ -190,7 +197,7 @@ func (m *Model) finishGame(ctx context.Context) error {
 		return ctx.Err()
 	}
 
-	m.SetState(&stateFinished{model: m})
+	m.SetState(&StateFinished{model: m})
 
 	return m.EmitResponses(ctx, m.responseEventGameStateChanged())
 }
@@ -251,23 +258,23 @@ func (m *Model) startGame(ctx context.Context) error {
 	m.round++
 
 	m.setRandomWord()
-	m.leaderIndex = (m.round + 1) % len(m.players)
+	m.leaderIndex = (m.round - 1) % len(m.players)
 
 	for _, p := range m.players {
 		p.ResetRound()
 	}
 
 	m.players[m.leaderIndex].SetLeader()
-	m.SetState(&stateInProgress{model: m})
+	m.SetState(&StateInProgress{model: m})
 
 	return m.EmitResponses(ctx,
 		&ResponseEventCanvasChanged{
-			Players:       m.players,
+			Players:       m.getPlayers(),
 			ActorClientID: m.getLeader().ClientID,
 			ImageBase64:   "",
 		},
 		&ResponseEventGameStarted{
-			Players: m.players,
+			Players: m.getPlayers(),
 		},
 		m.responseEventGameStateChanged(),
 		&ResponseEventLeadHello{

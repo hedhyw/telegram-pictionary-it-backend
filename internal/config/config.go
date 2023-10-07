@@ -2,6 +2,8 @@ package config
 
 import "time"
 
+// Config is a configuration of the application. It can be set
+// from environment variables, use: `env.Parse(...)`.
 type Config struct {
 	DebugEnabled          bool          `env:"DEBUG_ENABLED" envDefault:"true"`
 	ServerAddress         string        `env:"SERVER_ADDRESS" envDefault:"0.0.0.0:8081"`
@@ -15,6 +17,7 @@ type Config struct {
 	ServerCheckOrigin     string        `env:"SERVER_CHECK_ORIGIN" envDefault:"http://localhost:3000"`
 }
 
+// Sanitized returns a safe version of the config with masked secrets.
 func (cfg Config) Sanitized() Config {
 	const mask = "***"
 

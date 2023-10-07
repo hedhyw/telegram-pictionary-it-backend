@@ -18,13 +18,15 @@ const (
 	errPlayerLeader        semerr.Error = "player is leader"
 )
 
+// Game is a facade for the view, the model and the controller.
 type Game struct {
-	model *Model
-	view  *view
+	*Model
+	view *view
 
 	*Controller
 }
 
+// Essentials contains the required arguments for New.
 type Essentials struct {
 	ClientsHub *clientshub.Hub
 	Logger     zerolog.Logger
@@ -32,6 +34,7 @@ type Essentials struct {
 	Config     *config.Config
 }
 
+// New creates a new game facade.
 func New(es Essentials) *Game {
 	es.Logger = es.Logger.With().Str("chat", es.ChatID).Logger()
 
@@ -41,7 +44,7 @@ func New(es Essentials) *Game {
 
 	return &Game{
 		view:       view,
-		model:      model,
+		Model:      model,
 		Controller: controller,
 	}
 }

@@ -10,13 +10,13 @@ type SocketRequest struct {
 	Payload json.RawMessage `json:"payload"`
 }
 
-type SocketResponse struct {
+type SocketResponse[T any] struct {
 	Name    string `json:"name"`
-	Payload any    `json:"payload"`
+	Payload T      `json:"payload"`
 }
 
-func NewSocketResponse(payload fmt.Stringer) *SocketResponse {
-	return &SocketResponse{
+func NewSocketResponse[T fmt.Stringer](payload T) *SocketResponse[T] {
+	return &SocketResponse[T]{
 		Name:    payload.String(),
 		Payload: payload,
 	}

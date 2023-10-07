@@ -8,13 +8,14 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/config"
 )
 
-// TODO: graceful shutdown.
+// Server serves HTTP requests.
 type Server struct {
 	essentials Essentials
 
 	server *http.Server
 }
 
+// Essentials contains the required arguments for New.
 type Essentials struct {
 	Logger           zerolog.Logger
 	Config           config.Config

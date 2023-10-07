@@ -12,11 +12,13 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/game"
 )
 
-type stateInitial struct {
+// StateInitial implements the main state of the core.
+type StateInitial struct {
 	model *Model
 }
 
-func (s *stateInitial) HandleRequestEvent(ctx context.Context, event asyncmodel.RequestEvent) error {
+// HandleRequestEvent implements asyncmodel.State.
+func (s *StateInitial) HandleRequestEvent(ctx context.Context, event asyncmodel.RequestEvent) error {
 	switch event := event.(type) {
 	case *RequestEventGameStarted:
 		return s.handleGameStarted(ctx, event)
@@ -35,7 +37,7 @@ func (s *stateInitial) HandleRequestEvent(ctx context.Context, event asyncmodel.
 	}
 }
 
-func (s *stateInitial) handleGameStarted(ctx context.Context, event *RequestEventGameStarted) (err error) {
+func (s *StateInitial) handleGameStarted(ctx context.Context, event *RequestEventGameStarted) (err error) {
 	game, err := s.model.getGameByClient(event.ClientID)
 	if err != nil {
 		return fmt.Errorf("getting game: %w", err)
@@ -44,7 +46,7 @@ func (s *stateInitial) handleGameStarted(ctx context.Context, event *RequestEven
 	return game.Start(ctx)
 }
 
-func (s *stateInitial) handleClientConnected(_ context.Context, event *RequestEventClientConnected) (err error) {
+func (s *StateInitial) handleClientConnected(_ context.Context, event *RequestEventClientConnected) (err error) {
 	_, err = uuid.Parse(event.ClientID)
 	if err != nil {
 		return semerr.NewBadRequestError(fmt.Errorf("parsing uuid: %w", err))
@@ -59,7 +61,7 @@ func (s *stateInitial) handleClientConnected(_ context.Context, event *RequestEv
 	return nil
 }
 
-func (s *stateInitial) createGameIfNotExists(
+func (s *StateInitial) createGameIfNotExists(
 	_ context.Context,
 	chatID string,
 ) *game.Game {
@@ -83,7 +85,7 @@ func (s *stateInitial) createGameIfNotExists(
 	return createdGame
 }
 
-func (s *stateInitial) handleClientDisconnected(
+func (s *StateInitial) handleClientDisconnected(
 	ctx context.Context,
 	event *RequestEventClientDisconnnected,
 ) (err error) {
@@ -104,15 +106,7 @@ func (s *stateInitial) handleClientDisconnected(
 	return game.RemovePlayer(ctx, event.ClientID)
 }
 
-func (s stateInitial) String() string {
-	return fmt.Sprintf("%T", s)
-}
-
-func (s stateInitial) MarshalText() (text []byte, err error) {
-	return []byte(s.String()), nil
-}
-
-func (s *stateInitial) handleCanvasChanged(ctx context.Context, event *RequestEventCanvasChanged) (err error) {
+func (s *StateInitial) handleCanvasChanged(ctx context.Context, event *RequestEventCanvasChanged) (err error) {
 	game, err := s.model.getGameByClient(event.ClientID)
 	if err != nil {
 		return fmt.Errorf("getting game: %w", err)
@@ -121,7 +115,7 @@ func (s *stateInitial) handleCanvasChanged(ctx context.Context, event *RequestEv
 	return game.ChangeCanvas(ctx, event.ClientID, event.ImageBase64)
 }
 
-func (s *stateInitial) handleGuessAttempted(ctx context.Context, event *RequestEventWordGuessAttempted) (err error) {
+func (s *StateInitial) handleGuessAttempted(ctx context.Context, event *RequestEventWordGuessAttempted) (err error) {
 	game, err := s.model.getGameByClient(event.ClientID)
 	if err != nil {
 		return fmt.Errorf("getting game: %w", err)
@@ -130,7 +124,7 @@ func (s *stateInitial) handleGuessAttempted(ctx context.Context, event *RequestE
 	return game.GuessWord(ctx, event.ClientID, event.Word)
 }
 
-func (s *stateInitial) handlePlayerInitialized(ctx context.Context, event *RequestEventPlayerInitialized) (err error) {
+func (s *StateInitial) handlePlayerInitialized(ctx context.Context, event *RequestEventPlayerInitialized) (err error) {
 	logger := s.model.essentials.Logger.With().Str("client", event.ClientID).Logger()
 
 	meta, err := s.model.telegramDecoder.DecodeInitData(event.InitDataRaw)
@@ -148,4 +142,14 @@ func (s *stateInitial) handlePlayerInitialized(ctx context.Context, event *Reque
 		Msgf("client connected to the chat %s", chatID)
 
 	return game.AddPlayer(ctx, event.ClientID, meta)
+}
+
+// String implements fmt.Stringer and asyncmodel.State.
+func (s StateInitial) String() string {
+	return fmt.Sprintf("%T", s)
+}
+
+// MarshalText implements encoding.TextMarshaler and asyncmodel.State.
+func (s StateInitial) MarshalText() (text []byte, err error) {
+	return []byte(s.String()), nil
 }

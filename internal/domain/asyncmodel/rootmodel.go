@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Model is a general model that helps to manage states.
 type Model struct {
 	currentState State
 
@@ -18,6 +19,7 @@ type Model struct {
 	responseEventsCh chan ResponseEvent
 }
 
+// Essentials contains the required arguments for New.
 type Essentials struct {
 	InitialState           State
 	HandleRequestErrorFunc RequestErrorHandlerFunc
@@ -26,6 +28,7 @@ type Essentials struct {
 	ChannelSize            int
 }
 
+// New creates a new general *Model.
 func New(es Essentials) *Model {
 	model := &Model{
 		currentState: es.InitialState,
@@ -40,16 +43,21 @@ func New(es Essentials) *Model {
 	return model
 }
 
+// SetState modifies the current state of the model.
 func (m *Model) SetState(s State) {
 	m.currentState = s
 }
 
+// State returns the current state of the event.
+//
 // nolint: ireturn // State may have different implementations.
-func (m Model) State() State {
+func (m *Model) State() State {
 	return m.currentState
 }
 
-func (m Model) ResponseEvents() <-chan ResponseEvent {
+// ResponseEvents returns a channel with events, that
+// should be handled by a view.
+func (m *Model) ResponseEvents() <-chan ResponseEvent {
 	return m.responseEventsCh
 }
 
@@ -75,6 +83,7 @@ func (m *Model) handleEvent(ctx context.Context, event RequestEvent) {
 	}
 }
 
+// EmitResponses sends responses to clients.
 func (m *Model) EmitResponses(ctx context.Context, events ...ResponseEvent) error {
 	ctx, cancel := context.WithTimeout(ctx, m.essentials.RequestTimeout)
 	defer cancel()
@@ -91,6 +100,7 @@ func (m *Model) EmitResponses(ctx context.Context, events ...ResponseEvent) erro
 	return nil
 }
 
+// EmitRequest sends the event to the state of the model.
 func (m *Model) EmitRequest(ctx context.Context, event RequestEvent) error {
 	ctx, cancel := context.WithTimeout(ctx, m.essentials.RequestTimeout)
 	defer cancel()

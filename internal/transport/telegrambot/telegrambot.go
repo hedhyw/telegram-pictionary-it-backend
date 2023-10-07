@@ -33,6 +33,12 @@ func New(es Essentials) *TelegramBot {
 func (b TelegramBot) Run(ctx context.Context) error {
 	logger := b.essentials.Logger
 
+	if b.essentials.Config.TelegramBotToken == "" {
+		logger.Warn().Msg("bot token is not set, the bot is not running")
+
+		return nil
+	}
+
 	const offset = 0
 
 	bot, err := tgbotapi.NewBotAPI(b.essentials.Config.TelegramBotToken)

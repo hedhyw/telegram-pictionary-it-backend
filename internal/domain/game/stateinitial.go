@@ -11,11 +11,14 @@ import (
 	"github.com/hedhyw/telegram-pictionary-it-backend/internal/domain/entities"
 )
 
-type stateInitial struct {
+// StateInitial is the first initial state of the game, players
+// can join and start the game at this state.
+type StateInitial struct {
 	model *Model
 }
 
-func (s *stateInitial) HandleRequestEvent(
+// HandleRequestEvent implements asyncmodel.State.
+func (s *StateInitial) HandleRequestEvent(
 	ctx context.Context,
 	event asyncmodel.RequestEvent,
 ) error {
@@ -35,7 +38,7 @@ func (s *stateInitial) HandleRequestEvent(
 	}
 }
 
-func (s stateInitial) handleEventPlayerJoined(
+func (s StateInitial) handleEventPlayerJoined(
 	ctx context.Context,
 	event *RequestEventPlayerJoined,
 ) error {
@@ -43,20 +46,22 @@ func (s stateInitial) handleEventPlayerJoined(
 
 	return s.model.EmitResponses(ctx,
 		&ResponseEventPlayerHello{
-			Player: player,
+			Player: *player,
 		},
 		s.model.responseEventGameStateChanged(),
 	)
 }
 
-func (s stateInitial) handleEventGameStarted(ctx context.Context) error {
+func (s StateInitial) handleEventGameStarted(ctx context.Context) error {
 	return s.model.startGame(ctx)
 }
 
-func (s stateInitial) String() string {
+// String implements fmt.Stringer and asyncmodel.State.
+func (s StateInitial) String() string {
 	return fmt.Sprintf("%T", s)
 }
 
-func (s stateInitial) MarshalText() (text []byte, err error) {
+// MarshalText implements encoding.TextMarshaler and asyncmodel.State.
+func (s StateInitial) MarshalText() (text []byte, err error) {
 	return []byte(s.String()), nil
 }

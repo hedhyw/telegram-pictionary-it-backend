@@ -23,7 +23,7 @@ vendor:
 .PHONY: vendor
 
 test:
-	go test -race ./...
+	go test -timeout 30s -race ./...
 .PHONY: test
 
 lint: bin/golangci-lint

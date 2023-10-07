@@ -3,7 +3,7 @@ Feature: guess
     so that I can win the game.
 
     Scenario: All players guess the word correctly
-        Given there is a started with two players
+        Given there is a started game with two players
         When the guesser player guesses the word correctly
         Then the game is finished
 
@@ -12,7 +12,7 @@ Feature: guess
         When the guesser player guesses the word incorrectly
         Then the game is still in progress
 
-    Scenario: Some players guess the word correct;y
-        Given there is a started game with thress players
+    Scenario: Some players guess the word correctly
+        Given there is a started game with three players
         When one of the guesser players guesses the word correctly
         Then the game is still in progress

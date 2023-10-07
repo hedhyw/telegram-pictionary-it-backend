@@ -11,17 +11,20 @@ const (
 	errClientConflict semerr.Error = "client id conflict"
 )
 
+// Core is a facade for the model and the controller.
 type Core struct {
 	*Controller
 
 	model *Model
 }
 
+// Essentials contains the required arguments for New.
 type Essentials struct {
 	Logger zerolog.Logger
 	Config *config.Config
 }
 
+// New creates a new core facade.
 func New(es Essentials) *Core {
 	model := newModel(es)
 	controller := newController(model)

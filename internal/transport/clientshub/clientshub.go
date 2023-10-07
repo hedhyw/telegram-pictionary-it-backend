@@ -10,12 +10,15 @@ import (
 	"github.com/hedhyw/semerr/pkg/v1/semerr"
 )
 
+// Hub is a very simple implementation of connections manager.
+// It is a safe to use in concurrent code.
 type Hub struct {
 	clientsMutex sync.Mutex
 
 	idToClient map[string]*Connection
 }
 
+// New creates a new *Hub.
 func New() *Hub {
 	return &Hub{
 		clientsMutex: sync.Mutex{},
@@ -23,6 +26,7 @@ func New() *Hub {
 	}
 }
 
+// AddClient registers a new connection in the hub.
 func (h *Hub) AddClient(clientID string, eventsCh chan<- json.RawMessage) *Connection {
 	conn := h.newConnection(clientID, eventsCh)
 
@@ -33,6 +37,7 @@ func (h *Hub) AddClient(clientID string, eventsCh chan<- json.RawMessage) *Conne
 	return conn
 }
 
+// HasClient checks if the client exists in the hub.
 func (h *Hub) HasClient(clientID string) bool {
 	h.clientsMutex.Lock()
 	_, ok := h.idToClient[clientID]
@@ -41,6 +46,7 @@ func (h *Hub) HasClient(clientID string) bool {
 	return ok
 }
 
+// RemoveClient unregisters the client and removes it from the hub.
 func (h *Hub) RemoveClient(clientID string) bool {
 	h.clientsMutex.Lock()
 	defer h.clientsMutex.Unlock()
@@ -54,6 +60,7 @@ func (h *Hub) RemoveClient(clientID string) bool {
 	return true
 }
 
+// SendToClients sends the given payload to multiple clients.
 func (h *Hub) SendToClients(ctx context.Context, payload any, clientIDs ...string) error {
 	errSend := make([]error, 0, len(clientIDs))
 

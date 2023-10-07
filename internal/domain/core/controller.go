@@ -13,6 +13,7 @@ import (
 
 type handlerFunc func(ctx context.Context, clientID string, request entities.SocketRequest) error
 
+// Controller manipulates with the model.
 type Controller struct {
 	model asyncmodel.RequestEventEmitter
 
@@ -33,6 +34,7 @@ func newController(model asyncmodel.RequestEventEmitter) *Controller {
 	return controller
 }
 
+// RegisterClient adds a new client to the hub.
 func (c *Controller) RegisterClient(
 	ctx context.Context,
 	clientID string,
@@ -44,6 +46,7 @@ func (c *Controller) RegisterClient(
 	})
 }
 
+// UnregisterClient removes the client from the hub.
 func (c *Controller) UnregisterClient(
 	ctx context.Context,
 	clientID string,
@@ -53,6 +56,7 @@ func (c *Controller) UnregisterClient(
 	})
 }
 
+// EmitClientEvent processes general client request events.
 func (c *Controller) EmitClientEvent(
 	ctx context.Context,
 	clientID string,
@@ -73,6 +77,7 @@ func (c *Controller) EmitClientEvent(
 	return handler(ctx, clientID, payload)
 }
 
+// StartGame handles starting of a new game by the client.
 func (c *Controller) StartGame(
 	ctx context.Context,
 	clientID string,
@@ -83,6 +88,7 @@ func (c *Controller) StartGame(
 	})
 }
 
+// ChangeCanvas handles a drawing from the leader.
 func (c *Controller) ChangeCanvas(
 	ctx context.Context,
 	clientID string,
@@ -100,6 +106,7 @@ func (c *Controller) ChangeCanvas(
 	return c.model.EmitRequest(ctx, &payload)
 }
 
+// GuessWord handles an attempt to guess the word.
 func (c *Controller) GuessWord(
 	ctx context.Context,
 	clientID string,
@@ -117,6 +124,7 @@ func (c *Controller) GuessWord(
 	return c.model.EmitRequest(ctx, &payload)
 }
 
+// InitializePlayer handles InitData from Telegram.
 func (c *Controller) InitializePlayer(
 	ctx context.Context,
 	clientID string,

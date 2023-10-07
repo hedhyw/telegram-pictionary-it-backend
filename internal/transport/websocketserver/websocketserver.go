@@ -13,24 +13,31 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// WebSocketServer is a server that handles websocket connections.
 type WebSocketServer struct {
 	essentials Essentials
 
 	upgrader *websocket.Upgrader
 }
 
+// Essentials contains the required arguments for New.
 type Essentials struct {
 	Logger zerolog.Logger
 	Core   *core.Core
 	Config *config.Config
 }
 
+// New creates a new *WebSocketServer handler.
 func New(es Essentials) *WebSocketServer {
 	upgrader := &websocket.Upgrader{
 		HandshakeTimeout: es.Config.ServerTimeout,
 		ReadBufferSize:   es.Config.ServerReadBufferSize,
 		WriteBufferSize:  es.Config.ServerWriteBufferSize,
 		CheckOrigin: func(r *http.Request) bool {
+			if es.Config.ServerCheckOrigin == "*" {
+				return true
+			}
+
 			actualOrigin := r.Header["Origin"]
 			if len(actualOrigin) == 0 {
 				return true
@@ -51,6 +58,7 @@ func New(es Essentials) *WebSocketServer {
 	}
 }
 
+// ServeHTTP implements http.Handler.
 func (s WebSocketServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
