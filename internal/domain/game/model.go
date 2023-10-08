@@ -292,6 +292,7 @@ func (m *Model) startGame(ctx context.Context) error {
 			Players:       m.getPlayers(),
 			ActorClientID: m.getLeader().ClientID,
 			ImageBase64:   "",
+			UnixNano:      time.Now().UnixNano(),
 		},
 		&ResponseEventGameStarted{
 			Players: m.getPlayers(),
